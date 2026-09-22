@@ -1,0 +1,32 @@
+{
+  "siteName": "새한신용정보 채권추심 정보마당",
+  "companyName": "새한신용정보(주)",
+  "division": "개인/법인사업부 상담접수센터",
+  "phone": "1666-5970",
+  "phoneRaw": "16665970",
+  "siteUrl": "https://saehanccm.com",
+  "blogUrl": "https://saehanccm.com/posts",
+  "defaultOgImage": "https://cdn.imweb.me/thumbnail/20250520/d5abfd76bb497.png",
+  "description": "새한신용정보 1666-5970 ㅣ 공사대금, 물품대금, 기업 미수금, 상사채권 회수 및 신용조사 전문 가이드. 법률 절차와 합법적 채권추심 노하우를 제공합니다.",
+  "keywords": [
+    "채권추심",
+    "미수금 회수",
+    "공사대금 받는방법",
+    "물품대금 떼인돈",
+    "신용조사",
+    "채권추심절차",
+    "새한신용정보",
+    "지급명령",
+    "통장가압류",
+    "기업채권회수"
+  ],
+  "categories": [
+    { "id": "all", "name": "전체보기" },
+    { "id": "construction", "name": "공사대금·하도급" },
+    { "id": "goods", "name": "물품대금·납품" },
+    { "id": "corporate", "name": "기업·상사채권" },
+    { "id": "credit", "name": "신용조사·재산조회" },
+    { "id": "legal", "name": "법적절차·집행" },
+    { "id": "regional", "name": "전국 공단·지역별 가이드" }
+  ]
+}

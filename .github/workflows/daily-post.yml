@@ -1,0 +1,51 @@
+name: Daily Auto SEO & GEO Post to Saehanccm
+
+on:
+  schedule:
+    # 매일 한국 시간 오전 8시 30분 (UTC 23:30) 자동 실행
+    - cron: '30 23 * * *'
+  workflow_dispatch: # GitHub 웹 콘솔에서 수동으로 'Run workflow' 클릭 실행 가능
+
+jobs:
+  post-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 저장소 체크아웃
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: ⚙️ Node.js 환경 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: 🤖 AI SEO & GEO 전문 칼럼 자동 생성
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          node scripts/generate_post.mjs
+
+      - name: 💾 생성된 글 Git 저장소에 커밋 & 푸시
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add posts/ data/posts.json sitemap.xml
+          git commit -m "Auto: daily SEO/GEO post $(date +'%Y-%m-%d')" || exit 0
+          git pull --rebase origin main
+          git push origin main
+
+      - name: 🚀 Hostinger SFTP 서버로 자동 배포
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: 65002
+          protocol: sftp
+          server-dir: domains/saehanccm.com/public_html/
+          dangerous-clean-slate: false
+          timeout: 180000

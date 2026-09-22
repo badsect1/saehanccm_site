@@ -1,0 +1,21 @@
+{
+  "name": "saehanccm-seo-geo-system",
+  "version": "1.0.0",
+  "description": "새한신용정보 SEO 및 GEO 최적화 자동 포스팅 & 호스팅어 배포 시스템",
+  "type": "module",
+  "scripts": {
+    "post": "node scripts/generate_post.mjs",
+    "deploy": "python -u scripts/upload_to_hostinger.py",
+    "post:deploy": "node scripts/generate_post.mjs && python -u scripts/upload_to_hostinger.py",
+    "backup:live": "node scripts/sync_live_site.mjs"
+  },
+  "keywords": [
+    "seo",
+    "geo",
+    "hostinger",
+    "gemini",
+    "auto-posting"
+  ],
+  "author": "새한신용정보",
+  "license": "ISC"
+}
