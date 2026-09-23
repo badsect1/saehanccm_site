@@ -39,13 +39,12 @@ jobs:
           git push origin main
 
       - name: 🚀 Hostinger SFTP 서버로 자동 배포
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: 65002
-          protocol: sftp
-          server-dir: domains/saehanccm.com/public_html/
-          dangerous-clean-slate: false
-          timeout: 180000
+        env:
+          FTP_SERVER: ${{ secrets.FTP_SERVER }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+          FTP_PORT: 65002
+          FTP_REMOTE_DIR: domains/saehanccm.com/public_html
+        run: |
+          python3 -m pip install paramiko
+          python3 scripts/upload_to_hostinger.py
