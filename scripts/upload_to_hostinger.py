@@ -32,15 +32,44 @@ def load_env(path):
 
 config = load_env(ENV_PATH)
 
-SERVER = config.get('FTP_SERVER') or os.environ.get('FTP_SERVER') or '145.79.25.99'
-USERNAME = config.get('FTP_USERNAME') or os.environ.get('FTP_USERNAME') or 'u687833262'
-PASSWORD = config.get('FTP_PASSWORD') or os.environ.get('FTP_PASSWORD')
-PORT = int(config.get('FTP_PORT') or os.environ.get('FTP_PORT') or 65002)
-REMOTE_DIR = config.get('FTP_REMOTE_DIR') or os.environ.get('FTP_REMOTE_DIR') or 'domains/saehanccm.com/public_html'
+def clean_str(val):
+    if not val:
+        return ""
+    v = str(val).strip()
+    for prefix in ['sftp://', 'ftp://', 'ssh://', 'https://', 'http://']:
+        if v.startswith(prefix):
+            v = v[len(prefix):]
+    v = v.rstrip('/')
+    if ':' in v and v.count(':') == 1 and not v.startswith('['):
+        v = v.split(':')[0]
+    return v.strip()
+
+def clean_password(val):
+    if not val:
+        return ""
+    return str(val).strip('\r\n')
+
+raw_server = config.get('FTP_SERVER') or os.environ.get('FTP_SERVER') or '145.79.25.99'
+SERVER = clean_str(raw_server)
+
+raw_user = config.get('FTP_USERNAME') or os.environ.get('FTP_USERNAME') or 'u687833262'
+USERNAME = clean_str(raw_user)
+
+raw_pw = config.get('FTP_PASSWORD') or os.environ.get('FTP_PASSWORD')
+PASSWORD = clean_password(raw_pw)
+
+raw_port = config.get('FTP_PORT') or os.environ.get('FTP_PORT') or 65002
+try:
+    PORT = int(clean_str(raw_port))
+except ValueError:
+    PORT = 65002
+
+raw_dir = config.get('FTP_REMOTE_DIR') or os.environ.get('FTP_REMOTE_DIR') or 'domains/saehanccm.com/public_html'
+REMOTE_DIR = clean_str(raw_dir)
 
 def check_credentials():
     if not SERVER or not USERNAME or not PASSWORD:
-        print("❌ 서버 접속 정보가 설정되지 않았습니다. .env 파일을 확인해주세요.")
+        print("❌ 서버 접속 정보가 설정되지 않았습니다. .env 파일 또는 GitHub Secrets를 확인해주세요.")
         return False
     return True
 
@@ -82,8 +111,6 @@ def main():
     if not check_credentials():
         sys.exit(1)
 
-    print(f"🌐 호스팅어 서버 접속: {SERVER}:{PORT} (계정: {USERNAME})")
-    
     try:
         import paramiko
     except ImportError:
@@ -93,8 +120,29 @@ def main():
     try:
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        client.connect(SERVER, port=PORT, username=USERNAME, password=PASSWORD, timeout=20)
-        print("✅ SFTP 인증 성공!")
+
+        # 호스팅어 고정 SFTP IP (145.79.25.99)
+        DEFAULT_HOSTINGER_IP = '145.79.25.99'
+        targets = [SERVER]
+        if SERVER != DEFAULT_HOSTINGER_IP:
+            targets.append(DEFAULT_HOSTINGER_IP)
+
+        connected = False
+        last_error = None
+
+        for target in targets:
+            print(f"🌐 호스팅어 서버 접속 시도: {target}:{PORT} (계정: {USERNAME})")
+            try:
+                client.connect(target, port=PORT, username=USERNAME, password=PASSWORD, timeout=15)
+                connected = True
+                print(f"✅ SFTP 인증 성공! ({target}:{PORT})")
+                break
+            except Exception as e:
+                last_error = e
+                print(f"⚠️ {target} 접속 실패 ({e}), 다른 연결 경로로 시도합니다...")
+
+        if not connected:
+            raise last_error
 
         sftp = client.open_sftp()
         home_dir = sftp.normalize('.')
