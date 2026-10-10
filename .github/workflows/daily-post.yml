@@ -38,13 +38,20 @@ jobs:
           git pull --rebase origin main
           git push origin main
 
+      - name: 🐍 Python 환경 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: 🚀 Hostinger SFTP 서버로 자동 배포
         env:
-          FTP_SERVER: ${{ secrets.FTP_SERVER }}
-          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_SERVER: ${{ secrets.FTP_SERVER || '145.79.25.99' }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME || 'u687833262' }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
-          FTP_PORT: 65002
-          FTP_REMOTE_DIR: domains/saehanccm.com/public_html
+          FTP_PORT: '65002'
+          FTP_REMOTE_DIR: 'domains/saehanccm.com/public_html'
+          PYTHONUNBUFFERED: '1'
         run: |
-          python3 -m pip install paramiko
-          python3 scripts/upload_to_hostinger.py
+          pip install paramiko
+          python scripts/upload_to_hostinger.py
+
